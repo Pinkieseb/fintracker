@@ -12,8 +12,8 @@ module.exports = {
     {
       name: '@electron-forge/maker-squirrel',
       config: {
-        iconUrl: 'https://raw.githubusercontent.com/your-repo/main/public/assets/icon.ico',
-        setupIcon: path.join(__dirname, 'public', 'assets', 'icon.ico')
+        iconUrl: 'https://raw.githubusercontent.com/Pinkieseb/fintracker/main/public/assets/logo.png',
+        setupIcon: path.join(__dirname, 'public', 'assets', 'logo.png')
       },
     },
     {
@@ -24,27 +24,9 @@ module.exports = {
       name: '@electron-forge/maker-deb',
       config: {
         options: {
-          icon: path.join(__dirname, 'public', 'assets', 'icon.png'),
+          icon: path.join(__dirname, 'public', 'assets', 'logo.png'),
           maintainer: 'Pinkieseb',
           homepage: 'https://pinkieseb.com'
-        }
-      }
-    },
-    {
-      name: '@electron-forge/maker-rpm',
-      config: {
-        options: {
-          icon: path.join(__dirname, 'public', 'assets', 'icon.png')
-        }
-      },
-    },
-    {
-      name: '@electron-forge/maker-flatpak',
-      config: {
-        options: {
-          icon: path.join(__dirname, 'public', 'assets', 'icon.png'),
-          categories: ['Finance'],
-          mimeType: ['application/x-pinkieseb']
         }
       }
     }
@@ -54,7 +36,7 @@ module.exports = {
       name: '@electron-forge/publisher-github',
       config: {
         repository: {
-          owner: 'yourusername',
+          owner: 'Pinkieseb',
           name: 'fintracker'
         },
         prerelease: false,

@@ -2,22 +2,23 @@ import { app, BrowserWindow, ipcMain } from 'electron';
 import { autoUpdater, UpdateInfo } from 'electron-updater';
 import path from 'path';
 import { PrismaClient, FinancialCycle, Transaction, Customer } from '@prisma/client';
-import { execSync } from 'child_process';
 import log from 'electron-log';
 
+const { execSync } = require('child_process');
 const updateElectronApp = require('update-electron-app');
 
 app.commandLine.appendSwitch('no-sandbox');
 
 // Set up auto-updates
 updateElectronApp({
-  repo: 'yourusername/fintracker', // Replace with your actual GitHub username and repo name
+  repo: 'Pinkieseb/fintracker',
   updateInterval: '1 hour',
   logger: log
 });
 
 // Configure autoUpdater
 autoUpdater.logger = log;
+// @ts-ignore: Property 'transports' does not exist on type 'Logger'
 autoUpdater.logger.transports.file.level = 'info';
 
 // Set the DATABASE_URL environment variable
