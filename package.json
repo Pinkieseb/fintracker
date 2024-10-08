@@ -1,7 +1,7 @@
 {
   "name": "fintracker",
   "productName": "fintracker",
-  "version": "0.10.0",
+  "version": "0.10.1",
   "description": "FinTracker Electron application",
   "main": ".vite/build/main.js",
   "scripts": {
