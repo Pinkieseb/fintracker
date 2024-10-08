@@ -5,7 +5,14 @@ const path = require('path');
 module.exports = {
   packagerConfig: {
     icon: path.join(__dirname, 'public', 'assets', 'icon'),
-    asar: true,
+    asar: {
+      unpack: '**/node_modules/@prisma/client/runtime/*.node'
+    },
+    extraResource: [
+      path.join(__dirname, 'node_modules', '.prisma', 'client'),
+      path.join(__dirname, 'prisma', 'migrations'),
+      path.join(__dirname, 'node_modules', '@prisma', 'engines')
+    ],
   },
   rebuildConfig: {},
   makers: [

@@ -22,9 +22,11 @@ autoUpdater.logger = log;
 autoUpdater.logger.transports.file.level = 'info';
 
 // Set the DATABASE_URL environment variable
-process.env.DATABASE_URL = `file:${path.join(app.getPath('userData'), 'fintracker.db')}`;
+const userDataPath = app.getPath('userData');
+const dbPath = path.join(userDataPath, 'fintracker.db');
+process.env.DATABASE_URL = `file:${dbPath}`;
 
-const prisma = new PrismaClient();
+let prisma: PrismaClient;
 
 const createWindow = () => {
   const mainWindow = new BrowserWindow({
@@ -51,16 +53,49 @@ const createWindow = () => {
   });
 };
 
+async function generatePrismaClient() {
+  log.info('Generating Prisma client...');
+  const prismaBinary = app.isPackaged 
+    ? path.join(process.resourcesPath, 'app.asar.unpacked', 'node_modules', '.bin', 'prisma')
+    : 'npx prisma';
+  try {
+    execSync(`${prismaBinary} generate`, { 
+      stdio: 'inherit',
+      env: { ...process.env, DATABASE_URL: process.env.DATABASE_URL }
+    });
+    log.info('Prisma client generated successfully');
+  } catch (error) {
+    log.error('Failed to generate Prisma client:', error);
+    throw error;
+  }
+}
+
+async function applyDatabaseMigrations() {
+  log.info('Applying database migrations...');
+  const prismaBinary = app.isPackaged 
+    ? path.join(process.resourcesPath, 'app.asar.unpacked', 'node_modules', '.bin', 'prisma')
+    : 'npx prisma';
+  try {
+    execSync(`${prismaBinary} migrate deploy`, { 
+      stdio: 'inherit',
+      env: { ...process.env, DATABASE_URL: process.env.DATABASE_URL }
+    });
+    log.info('Migrations applied successfully');
+  } catch (error) {
+    log.error('Failed to apply database migrations:', error);
+    throw error;
+  }
+}
+
 app.whenReady().then(async () => {
   try {
-    // Ensure the database is migrated before connecting
-    console.log('Applying database migrations...');
-    execSync('npx prisma migrate deploy', { stdio: 'inherit' });
-    console.log('Migrations applied successfully');
+    await generatePrismaClient();
+    await applyDatabaseMigrations();
 
-    // Connect to the database
+    // Initialize PrismaClient after generating and migrating
+    prisma = new PrismaClient();
     await prisma.$connect();
-    console.log('Database connected successfully');
+    log.info('Database connected successfully');
 
     createWindow();
     setupIpcHandlers();
@@ -72,7 +107,7 @@ app.whenReady().then(async () => {
     // Check for updates after app is ready
     autoUpdater.checkForUpdatesAndNotify();
   } catch (error) {
-    console.error('Failed to initialize the application:', error);
+    log.error('Failed to initialize the application:', error);
     app.quit();
   }
 });
@@ -143,10 +178,10 @@ function setupIpcHandlers() {
     ipcMain.handle(channel, async (event, ...args) => {
       try {
         const result = await handler(event, ...args);
-        console.log(`Successfully executed ${channel}`);
+        log.info(`Successfully executed ${channel}`);
         return result;
       } catch (error) {
-        console.error(`Error in ${channel}:`, error);
+        log.error(`Error in ${channel}:`, error);
         if (error instanceof Error) {
           return { error: true, message: error.message };
         } else {
@@ -169,9 +204,9 @@ function setupIpcHandlers() {
 app.on('before-quit', async () => {
   try {
     await prisma.$disconnect();
-    console.log('Database disconnected successfully');
+    log.info('Database disconnected successfully');
   } catch (error) {
-    console.error('Error disconnecting from the database:', error);
+    log.error('Error disconnecting from the database:', error);
   }
 });
 
